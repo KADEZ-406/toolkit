@@ -2,13 +2,13 @@
 
 KADEZ-406 is a comprehensive command-line penetration testing tool that combines multiple security testing capabilities into a single, powerful CLI interface. It provides various scanners, tools, and security checks to help security professionals and penetration testers assess web applications efficiently from the terminal.
 
-
 ## 🚀 Features
 
 ### Scanners
 - SQL Injection Scanner (Single URL and Mass Scanning)
 - Port Scanner
 - WAF (Web Application Firewall) Detector
+- Enhanced Recon Module with Nmap and Amass Integration
 
 ### Tools
 - Text Encoder (Various encoding formats)
@@ -28,6 +28,8 @@ KADEZ-406 is a comprehensive command-line penetration testing tool that combines
 ```
 Python 3.8+
 pip (Python package installer)
+Nmap
+Amass
 ```
 
 ## 🔧 Installation
@@ -54,7 +56,16 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Configure your environment:
+4. Install system dependencies:
+```bash
+# Debian/Ubuntu
+sudo apt-get install nmap amass
+
+# Windows (with Chocolatey)
+choco install nmap amass
+```
+
+5. Configure your environment:
 - Create necessary directories:
   ```bash
   mkdir -p data/results
@@ -76,7 +87,8 @@ All scan results are saved in the `data/results/` directory:
 - `admin_pages.txt` - Found admin pages
 - `sensitive_files.txt` - Found sensitive files
 - `tech_analysis.json` - Detected technologies
-
+- `nmap_[domain].txt` - Nmap scan results
+- `amass_[domain].txt` - Amass enumeration results
 
 ## 🛡️ Security Considerations
 
@@ -84,9 +96,6 @@ All scan results are saved in the `data/results/` directory:
 - Always obtain proper authorization before testing any target
 - Some features may require API keys (e.g., Shodan)
 - Store sensitive API keys in environment variables
-- Regular updates are recommended for security patches
-
-
 
 ## 📝 License
 
@@ -103,5 +112,4 @@ This tool is for educational purposes and authorized testing only. Users are res
 
 ## 📧 Contact
 
-
-Project Link: [https://github.com/KADEZ-406/toolkit](https://github.com/KADEZ-406/kadez-406) 
+Project Link: [https://github.com/KADEZ-406/toolkit](https://github.com/KADEZ-406/toolkit)
