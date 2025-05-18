@@ -38,7 +38,6 @@ def print_menu():
         "CMS Detector",
         "Clickjacking Checker",
         "Directory Listing Checker",
-        "Path Traversal Scanner",
         "Exit"
     ]
     
@@ -97,10 +96,6 @@ def handle_menu_choice(choice):
     elif choice == "16":
         from modules.dir_listing import check_directory_listing
         check_directory_listing()
-    elif choice == "17":
-        from modules.path_traversal import scan_path_traversal
-        url = input(Fore.GREEN + "Enter target URL (e.g. http://example.com): " + Style.RESET_ALL)
-        scan_path_traversal(url)
     elif choice == "0":
         print(Fore.YELLOW + "\nThank you for using KADEZ-406!")
         sys.exit(0)
