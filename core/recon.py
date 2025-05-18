@@ -111,9 +111,9 @@ def parse_nmap_results(nmap_output):
                 })
     
     # Parse OS detection
-    os_pattern = r'OS details: (.+)'
-    os_matches = re.findall(os_pattern, nmap_output)
-    results['os_detection'] = os_matches
+    operating_system_pattern = r'OS details: (.+)'
+    operating_system_matches = re.findall(operating_system_pattern, nmap_output)
+    results['os_detection'] = operating_system_matches
     
     return results
 
