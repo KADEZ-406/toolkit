@@ -1,54 +1,36 @@
 # KADEZ-406 Penetration Testing Tool
 
-KADEZ-406 is a comprehensive command-line penetration testing tool that combines multiple security testing capabilities into a single, powerful CLI interface. It provides various scanners, tools, and security checks to help security professionals and penetration testers assess web applications efficiently from the terminal.
+KADEZ-406 is a comprehensive penetration testing tool designed for security professionals and ethical hackers. It provides various modules for reconnaissance and vulnerability assessment.
 
-## 🚀 Features
+## Features
 
-### Scanners
-- SQL Injection Scanner (Single URL and Mass Scanning)
-- Port Scanner
-- WAF (Web Application Firewall) Detector
-- Enhanced Recon Module with Nmap and Amass Integration
+- **Information Gathering**
+  - WHOIS lookup
+  - DNS enumeration
+  - Subdomain discovery
+  - Port scanning with Nmap integration
+  - Web technology detection
+  - GeoIP information
 
-### Tools
-- Text Encoder (Various encoding formats)
-- Hex Converter (String to Hex and vice versa)
-- Real IP Finder
-- Technology Stack Analyzer
+- **Web Application Testing**
+  - Directory listing detection
+  - File discovery
+  - CMS detection
+  - Clickjacking vulnerability testing
+  - Admin panel finder
 
-### Finders & Checkers
-- Admin Page Finder
-- Sensitive File Finder
-- CMS Detector
-- Clickjacking Vulnerability Checker
-- Directory Listing Checker
-
-## 📋 Requirements
-
-```
-Python 3.8+
-pip (Python package installer)
-Nmap
-Amass
-```
-
-## 🔧 Installation
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/KADEZ-406/toolkit.git
-cd kadez-406
+git clone https://github.com/yourusername/KADEZ-406.git
+cd KADEZ-406
 ```
 
-2. Create and activate a virtual environment (recommended):
+2. Create a virtual environment (recommended):
 ```bash
-# Windows
 python -m venv venv
-.\venv\Scripts\activate
-
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 3. Install required dependencies:
@@ -56,59 +38,73 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Install system dependencies:
-```bash
-# Debian/Ubuntu
-sudo apt-get install nmap amass
+## Usage
 
-# Windows (with Chocolatey)
-choco install nmap amass
-```
-
-5. Configure your environment:
-- Create necessary directories:
-  ```bash
-  mkdir -p data/results
-  ```
-
-## 🚀 Usage
-
-Run the main script:
+Run the main tool:
 ```bash
 python kadez.py
 ```
 
-### Output Files
+## Project Structure
 
-All scan results are saved in the `data/results/` directory:
-- `vuln_urls.txt` - SQL injection vulnerabilities
-- `waf_detection.json` - WAF analysis results
-- `domain_recon.json` - Information gathering results
-- `admin_pages.txt` - Found admin pages
-- `sensitive_files.txt` - Found sensitive files
-- `tech_analysis.json` - Detected technologies
-- `nmap_[domain].txt` - Nmap scan results
-- `amass_[domain].txt` - Amass enumeration results
+```
+KADEZ-406/
+├── core/               # Core functionality
+│   ├── __init__.py
+│   └── recon.py       # Reconnaissance module
+├── modules/           # Testing modules
+│   ├── __init__.py
+│   ├── admin_finder.py
+│   ├── clickjacking.py
+│   ├── cms_detector.py
+│   ├── dir_listing.py
+│   └── file_finder.py
+├── data/             # Data directory
+│   ├── admin.txt     # Admin panel wordlist
+│   ├── files.txt     # File discovery wordlist
+│   └── results/      # Scan results directory
+├── wordlists/        # Additional wordlists
+├── requirements.txt  # Python dependencies
+└── kadez.py         # Main application
+```
 
-## 🛡️ Security Considerations
+## Requirements
 
-- This tool is for educational and authorized testing purposes only
-- Always obtain proper authorization before testing any target
-- Some features may require API keys (e.g., Shodan)
-- Store sensitive API keys in environment variables
+- Python 3.8+
+- See requirements.txt for Python package dependencies
 
-## 📝 License
+## Dependencies
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The tool requires the following main packages:
+- colorama
+- pyfiglet
+- requests
+- python-whois
+- dnspython
+- beautifulsoup4
+- shodan
+- python-nmap
+- tqdm
+- cryptography
+- Flask
+- Flask-WTF
+- Werkzeug
 
-## 🙏 Acknowledgments
+## Contributing
 
-- Uses various open-source security tools and libraries
-- Community contributions and feedback
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## ⚠️ Disclaimer
+## License
 
-This tool is for educational purposes and authorized testing only. Users are responsible for obtaining proper authorization before testing any target systems. The developers are not responsible for any misuse or damage caused by this tool.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Disclaimer
+
+This tool is for educational purposes and ethical penetration testing only. Users are responsible for obtaining proper authorization before testing any systems they don't own or have explicit permission to test.
 
 ## 📧 Contact
 

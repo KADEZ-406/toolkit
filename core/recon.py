@@ -7,24 +7,60 @@ import os
 import subprocess
 import re
 from datetime import datetime
-from colorama import Fore, Style
-from core.exploits import run_exploits
+from colorama import Fore, Style, init
+
+# Initialize colorama
+init(autoreset=True)
+
+def check_tool_exists(tool_name):
+    """Check if a command-line tool exists in the system PATH"""
+    try:
+        if os.name == 'nt':  # Windows
+            # Check common Windows installation paths
+            common_paths = [
+                os.path.join(os.environ.get('ProgramFiles', ''), tool_name),
+                os.path.join(os.environ.get('ProgramFiles(x86)', ''), tool_name),
+                os.path.join(os.environ.get('ProgramFiles', ''), tool_name, tool_name + '.exe'),
+                os.path.join(os.environ.get('ProgramFiles(x86)', ''), tool_name, tool_name + '.exe'),
+            ]
+            
+            # Check if tool exists in PATH or common locations
+            for path in common_paths:
+                if os.path.exists(path) or os.path.exists(path + '.exe'):
+                    return True
+                    
+            # Try where command as fallback
+            try:
+                subprocess.run(['where', tool_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+                return True
+            except subprocess.CalledProcessError:
+                return False
+        else:  # Unix-like
+            subprocess.run(['which', tool_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            return True
+    except subprocess.CalledProcessError:
+        return False
+    except Exception:
+        return False
 
 def run_nmap_scan(target, output_file):
     """Run enhanced Nmap scan with comprehensive scripts"""
+    if not check_tool_exists('nmap'):
+        print(Fore.YELLOW + "\n[*] Nmap scan skipped - Nmap not found")
+        print(Fore.WHITE + "[*] To enable Nmap scanning, install Nmap from: https://nmap.org/download.html")
+        return None
+    
     try:
         print(Fore.YELLOW + "\n[*] Running Enhanced Nmap scan...")
         
         # Comprehensive scan with service detection, OS detection, and vulnerability scripts
         nmap_cmd = [
             "nmap",
-            "-sS", "-sV", "-O", "-A",
-            "--script=vuln,exploit,auth,brute,default",
-            "--script-args=unsafe=1",
+            "-sS", "-sV", "-O",  # Remove -A flag to reduce errors
             "--min-rate", "1000",
             "-p-",  # Scan all ports
             "-T4",  # Aggressive timing
-            "--version-intensity", "9",
+            "--version-intensity", "5",  # Reduce from 9 to 5 for better stability
             "-oN", output_file,
             target
         ]
@@ -56,19 +92,22 @@ def run_nmap_scan(target, output_file):
 
 def run_amass_enum(domain, output_file):
     """Run enhanced Amass enumeration"""
+    if not check_tool_exists('amass'):
+        print(Fore.YELLOW + "\n[*] Amass enumeration skipped - Amass not found")
+        print(Fore.WHITE + "[*] To enable subdomain enumeration, install Amass from:")
+        print(Fore.WHITE + "    https://github.com/OWASP/Amass/releases")
+        return None
+    
     try:
         print(Fore.YELLOW + "\n[*] Running Enhanced Amass enumeration...")
         
         # Enhanced Amass configuration with active enumeration
         amass_cmd = [
             "amass", "enum",
-            "-active",  # Active enumeration
-            "-brute",   # Brute forcing
-            "-w", "wordlists/subdomains.txt",  # Custom wordlist
+            "-passive",  # Use passive mode instead of active for better compatibility
             "-d", domain,
             "-o", output_file,
-            "-timeout", "30",
-            "-max-dns-queries", "500"
+            "-timeout", "30"
         ]
         
         process = subprocess.Popen(
@@ -84,10 +123,11 @@ def run_amass_enum(domain, output_file):
             print(Fore.GREEN + "[+] Enhanced Amass enumeration completed successfully")
             
             # Read and parse Amass results
-            with open(output_file, 'r') as f:
-                subdomains = f.read().splitlines()
-            
-            return subdomains
+            if os.path.exists(output_file):
+                with open(output_file, 'r') as f:
+                    subdomains = f.read().splitlines()
+                return subdomains
+            return []
         else:
             print(Fore.RED + f"[!] Amass enumeration failed: {stderr}")
             return None
@@ -124,27 +164,9 @@ def parse_nmap_results(nmap_output):
                 })
     
     # Parse OS detection
-    operating_system_pattern = r'OS details: (.+)'
-    operating_system_matches = re.findall(operating_system_pattern, nmap_output)
-    results['os_detection'] = operating_system_matches
-    
-    # Parse vulnerability information
-    vuln_pattern = r'(\|\s*[_A-Z0-9-]+):\s*\n(\|\s*.+(?:\n\|\s*.+)*)'
-    vuln_matches = re.findall(vuln_pattern, nmap_output)
-    for vuln_name, vuln_details in vuln_matches:
-        results['vulnerabilities'].append({
-            'name': vuln_name.strip('| _'),
-            'details': vuln_details.replace('|_', '').strip()
-        })
-    
-    # Parse script output
-    script_pattern = r'(\|\s*[a-z-]+):\s*\n(\|\s*.+(?:\n\|\s*.+)*)'
-    script_matches = re.findall(script_pattern, nmap_output)
-    for script_name, script_output in script_matches:
-        results['scripts'].append({
-            'name': script_name.strip('| '),
-            'output': script_output.replace('|_', '').strip()
-        })
+    os_pattern = r'OS details: (.+)'
+    os_matches = re.findall(os_pattern, nmap_output)
+    results['os_detection'] = os_matches
     
     return results
 
@@ -157,15 +179,14 @@ def gather_info():
         'scan_info': {
             'target': domain,
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'scan_type': 'Full Reconnaissance with Exploitation'
+            'scan_type': 'Full Reconnaissance'
         },
         'whois_data': {},
         'dns_data': {},
         'network_data': {},
         'subdomain_data': {},
         'web_data': {},
-        'geo_data': {},
-        'exploitation_data': {}
+        'geo_data': {}
     }
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -173,48 +194,53 @@ def gather_info():
     
     try:
         # Create results directory if it doesn't exist
-        if not os.path.exists("data/results"):
-            os.makedirs("data/results")
-        if not os.path.exists(scan_dir):
-            os.makedirs(scan_dir)
+        os.makedirs(scan_dir, exist_ok=True)
         
         # WHOIS Information
         print(Fore.YELLOW + "\n[*] Gathering WHOIS information...")
-        whois_info = whois.whois(domain)
-        
-        # Handle name_servers that might not be iterable
-        name_servers = whois_info.name_servers
-        if name_servers is None:
-            name_servers = []
-        elif isinstance(name_servers, str):
-            name_servers = [name_servers]
-        elif not isinstance(name_servers, (list, tuple)):
-            name_servers = []
+        try:
+            whois_info = whois.whois(domain)
             
-        results['whois_data'] = {
-            'registrar': whois_info.registrar,
-            'creation_date': str(whois_info.creation_date),
-            'expiration_date': str(whois_info.expiration_date),
-            'name_servers': name_servers,
-            'registrant': whois_info.registrant,
-            'admin_contact': whois_info.admin,
-            'tech_contact': whois_info.tech
-        }
-        print(Fore.GREEN + "[+] WHOIS information gathered")
+            # Handle name_servers that might not be iterable
+            name_servers = whois_info.name_servers
+            if name_servers is None:
+                name_servers = []
+            elif isinstance(name_servers, str):
+                name_servers = [name_servers]
+            elif not isinstance(name_servers, (list, tuple)):
+                name_servers = []
+                
+            results['whois_data'] = {
+                'registrar': whois_info.registrar,
+                'creation_date': str(whois_info.creation_date),
+                'expiration_date': str(whois_info.expiration_date),
+                'name_servers': name_servers,
+                'registrant': whois_info.registrant,
+                'admin_contact': whois_info.admin,
+                'tech_contact': whois_info.tech
+            }
+            print(Fore.GREEN + "[+] WHOIS information gathered")
+        except Exception as e:
+            print(Fore.RED + f"[!] Error gathering WHOIS information: {str(e)}")
+            results['whois_data'] = {'error': str(e)}
         
         # IP Lookup and Reverse DNS
         print(Fore.YELLOW + "\n[*] Performing IP lookup and Reverse DNS...")
-        ip = socket.gethostbyname(domain)
         try:
-            reverse_dns = socket.gethostbyaddr(ip)[0]
-        except:
-            reverse_dns = None
-        
-        results['network_data']['main_ip'] = ip
-        results['network_data']['reverse_dns'] = reverse_dns
-        print(Fore.GREEN + f"[+] IP Address: {ip}")
-        if reverse_dns:
-            print(Fore.GREEN + f"[+] Reverse DNS: {reverse_dns}")
+            ip = socket.gethostbyname(domain)
+            try:
+                reverse_dns = socket.gethostbyaddr(ip)[0]
+            except:
+                reverse_dns = None
+            
+            results['network_data']['main_ip'] = ip
+            results['network_data']['reverse_dns'] = reverse_dns
+            print(Fore.GREEN + f"[+] IP Address: {ip}")
+            if reverse_dns:
+                print(Fore.GREEN + f"[+] Reverse DNS: {reverse_dns}")
+        except Exception as e:
+            print(Fore.RED + f"[!] Error performing IP lookup: {str(e)}")
+            results['network_data']['error'] = str(e)
         
         # Enhanced DNS Information
         print(Fore.YELLOW + "\n[*] Gathering comprehensive DNS information...")
@@ -229,18 +255,18 @@ def gather_info():
                 dns_info[record_type] = [str(r) for r in records]
             except:
                 dns_info[record_type] = []
-            
+                
         results['dns_data'] = dns_info
         print(Fore.GREEN + "[+] Comprehensive DNS information gathered")
         
-        # Run Enhanced Nmap scan
+        # Run Enhanced Nmap scan if available
         nmap_output_file = os.path.join(scan_dir, f"nmap_{domain}.txt")
         nmap_output = run_nmap_scan(ip, nmap_output_file)
         if nmap_output:
             results['network_data']['nmap_results'] = parse_nmap_results(nmap_output)
             results['network_data']['nmap_raw_output'] = nmap_output
         
-        # Run Enhanced Amass enumeration
+        # Run Enhanced Amass enumeration if available
         amass_output_file = os.path.join(scan_dir, f"amass_{domain}.txt")
         subdomains = run_amass_enum(domain, amass_output_file)
         if subdomains:
@@ -288,10 +314,9 @@ def gather_info():
                 results['web_data']['technologies'].append('Java')
             
             print(Fore.GREEN + "[+] Web information gathered")
-        except:
-            results['web_data']['headers'] = {}
-            results['web_data']['status_code'] = None
-            print(Fore.RED + "[!] Could not gather web information")
+        except Exception as e:
+            print(Fore.RED + f"[!] Could not gather web information: {str(e)}")
+            results['web_data']['error'] = str(e)
         
         # Enhanced GeoIP Information
         print(Fore.YELLOW + "\n[*] Gathering detailed GeoIP information...")
@@ -303,14 +328,9 @@ def gather_info():
             else:
                 results['geo_data'] = {}
                 print(Fore.RED + "[!] Could not gather GeoIP information")
-        except:
-            results['geo_data'] = {}
-            print(Fore.RED + "[!] Could not gather GeoIP information")
-        
-        # Run Exploitation Module
-        print(Fore.YELLOW + "\n[*] Running exploitation module...")
-        exploit_results = run_exploits(f"http://{domain}")
-        results['exploitation_data'] = exploit_results
+        except Exception as e:
+            print(Fore.RED + f"[!] Error gathering GeoIP information: {str(e)}")
+            results['geo_data'] = {'error': str(e)}
         
         # Save all results to a single JSON file
         output_file = os.path.join(scan_dir, f"{domain}_full_recon.json")
@@ -320,11 +340,12 @@ def gather_info():
         # Print detailed results
         print(Fore.CYAN + "\n=== Detailed Results ===\n")
         
-        print(Fore.GREEN + "WHOIS Information:")
-        print(Fore.WHITE + f"Registrar: {results['whois_data']['registrar']}")
-        print(Fore.WHITE + f"Creation Date: {results['whois_data']['creation_date']}")
-        print(Fore.WHITE + f"Expiration Date: {results['whois_data']['expiration_date']}")
-        print(Fore.WHITE + f"Name Servers: {', '.join(results['whois_data']['name_servers'])}")
+        if results['whois_data'] and 'error' not in results['whois_data']:
+            print(Fore.GREEN + "WHOIS Information:")
+            print(Fore.WHITE + f"Registrar: {results['whois_data']['registrar']}")
+            print(Fore.WHITE + f"Creation Date: {results['whois_data']['creation_date']}")
+            print(Fore.WHITE + f"Expiration Date: {results['whois_data']['expiration_date']}")
+            print(Fore.WHITE + f"Name Servers: {', '.join(results['whois_data']['name_servers'])}")
         
         print(Fore.GREEN + "\nDNS Information:")
         for record_type, records in results['dns_data'].items():
@@ -342,11 +363,6 @@ def gather_info():
                 print(Fore.WHITE + "\nOS Detection:")
                 for operating_system in nmap_data['os_detection']:
                     print(Fore.WHITE + f"  {operating_system}")
-            if nmap_data['vulnerabilities']:
-                print(Fore.WHITE + "\nVulnerabilities Found:")
-                for vuln in nmap_data['vulnerabilities']:
-                    print(Fore.WHITE + f"  {vuln['name']}")
-                    print(Fore.WHITE + f"    {vuln['details']}")
         
         if 'subdomains' in results['subdomain_data']:
             print(Fore.GREEN + f"\nDiscovered Subdomains ({results['subdomain_data']['total_count']}):")
@@ -361,7 +377,7 @@ def gather_info():
             for tech in results['web_data']['technologies']:
                 print(Fore.WHITE + f"  {tech}")
         
-        if results['geo_data']:
+        if results['geo_data'] and 'error' not in results['geo_data']:
             print(Fore.GREEN + "\nGeoIP Information:")
             geo = results['geo_data']
             print(Fore.WHITE + f"Country: {geo.get('country', 'N/A')}")
@@ -373,16 +389,11 @@ def gather_info():
             if geo.get('hosting'):
                 print(Fore.YELLOW + "  [!] Hosting/Datacenter detected")
         
-        if results['exploitation_data'].get('vulnerabilities'):
-            print(Fore.GREEN + "\nExploitation Results:")
-            for vuln in results['exploitation_data']['vulnerabilities']:
-                print(Fore.RED + f"\n[!] {vuln['type']} Vulnerability Found!")
-                for finding in vuln['findings']:
-                    print(Fore.WHITE + f"  Details: {finding}")
-        
         print(Fore.GREEN + f"\n[+] All scan results saved to: {output_file}")
-        print(Fore.GREEN + f"[+] Raw Nmap output saved to: {nmap_output_file}")
-        print(Fore.GREEN + f"[+] Raw Amass output saved to: {amass_output_file}")
+        if nmap_output:
+            print(Fore.GREEN + f"[+] Raw Nmap output saved to: {nmap_output_file}")
+        if subdomains:
+            print(Fore.GREEN + f"[+] Raw Amass output saved to: {amass_output_file}")
         
     except Exception as e:
         print(Fore.RED + f"\nError during information gathering: {str(e)}")
