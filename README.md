@@ -2,7 +2,6 @@
 
 KADEZ-406 is a comprehensive command-line penetration testing tool that combines multiple security testing capabilities into a single, powerful CLI interface. It provides various scanners, tools, and security checks to help security professionals and penetration testers assess web applications efficiently from the terminal.
 
-![KADEZ-406 Logo](static/img/logo.png) *(Add your logo image)*
 
 ## 🚀 Features
 
@@ -35,7 +34,7 @@ pip (Python package installer)
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/KADEZ-406/kadez-406.git
+git clone https://github.com/KADEZ-406/toolkit.git
 cd kadez-406
 ```
 
@@ -68,66 +67,6 @@ Run the main script:
 python kadez.py
 ```
 
-### Available Commands
-
-1. SQL Injection Scanner:
-```bash
-# Single URL scan
-python kadez.py sqli -u <target_url>
-
-# Mass scan from file
-python kadez.py sqli -f urls.txt
-```
-
-2. Port Scanner:
-```bash
-python kadez.py portscan -t <target_host> [-p <port_range>]
-```
-
-3. WAF Detection:
-```bash
-python kadez.py waf -u <target_url>
-```
-
-4. Text Encoding:
-```bash
-python kadez.py encode -t <text> [-m <method>]
-# Methods: base64, url, md5, sha256
-```
-
-5. Hex Conversion:
-```bash
-# String to Hex
-python kadez.py hex -s "string"
-
-# Hex to String
-python kadez.py hex -x "68657864656320"
-```
-
-6. Admin Finder:
-```bash
-python kadez.py admin -u <target_url>
-```
-
-7. File Finder:
-```bash
-python kadez.py files -u <target_url>
-```
-
-8. CMS Detection:
-```bash
-python kadez.py cms -u <target_url>
-```
-
-9. Security Checks:
-```bash
-# Clickjacking Test
-python kadez.py click -u <target_url>
-
-# Directory Listing Check
-python kadez.py dirlist -u <target_url>
-```
-
 ### Output Files
 
 All scan results are saved in the `data/results/` directory:
@@ -138,29 +77,6 @@ All scan results are saved in the `data/results/` directory:
 - `sensitive_files.txt` - Found sensitive files
 - `tech_analysis.json` - Detected technologies
 
-## 📁 Project Structure
-
-```
-kadez-406/
-├── kadez.py              # Main CLI application
-├── requirements.txt      # Python dependencies
-├── core/                 # Core functionality modules
-│   ├── scanner.py
-│   ├── waf.py
-│   ├── encoder.py
-│   ├── convert.py
-│   ├── recon.py
-│   ├── real_ip.py
-│   └── tech_analyst.py
-├── modules/              # Additional feature modules
-│   ├── admin_finder.py
-│   ├── file_finder.py
-│   ├── cms_detector.py
-│   ├── clickjacking.py
-│   └── dir_listing.py
-└── data/                # Data storage
-    └── results/         # Scan results storage
-```
 
 ## 🛡️ Security Considerations
 
@@ -170,13 +86,7 @@ kadez-406/
 - Store sensitive API keys in environment variables
 - Regular updates are recommended for security patches
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📝 License
 
@@ -193,5 +103,5 @@ This tool is for educational purposes and authorized testing only. Users are res
 
 ## 📧 Contact
 
-Your Name - [@KADEZ-406](https://twitter.com/KADEZ-406)
-Project Link: [https://github.com/KADEZ-406/kadez-406](https://github.com/KADEZ-406/kadez-406) 
+
+Project Link: [https://github.com/KADEZ-406/toolkit](https://github.com/KADEZ-406/kadez-406) 
