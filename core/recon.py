@@ -7,10 +7,7 @@ import os
 import subprocess
 import re
 from datetime import datetime
-<<<<<<< HEAD
 from colorama import Fore, Style
-=======
->>>>>>> 4e79b66ef31c2f7699e51866c8e8f3dfcb8a78e0
 
 def run_nmap_scan(target, output_file):
     """Run Nmap scan with common scripts"""
@@ -128,12 +125,6 @@ def gather_info():
     results = {}
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     scan_dir = f"data/results/recon_{timestamp}"
-<<<<<<< HEAD
-=======
-    
-    if not os.path.exists(scan_dir):
-        os.makedirs(scan_dir)
->>>>>>> 4e79b66ef31c2f7699e51866c8e8f3dfcb8a78e0
     
     try:
         # Create results directory if it doesn't exist
